@@ -1,0 +1,69 @@
+<html>
+<head>
+    <title>{{rule_name}}: {{datetime}}</title>
+</head>
+<body>
+
+<p>
+    There were <strong>{{ num_hits }}</strong> incident found matching the criteria this Uber Incident
+</p>
+
+
+{# note: correlated values must be list o dictionaries like this
+[{"qk": query_key, "value": value, "counts": 0}]
+#}
+
+{% if correlated_values is defined and correlated_values|length > 0 %}
+<p>The following correlated values were taken into account to trigger the notification</p>
+<table border="1" cellspacing="2" cellpadding="2">
+    <thead>
+    <tr>
+        <th>Correlated Value ({{correlated_values[0].qk}})</th>
+        <th>Count</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for cv in correlated_values %}
+    <tr>
+        <td>{{cv.value}}</td>
+        <td style="text-align:right">{{cv.counts}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<br/>
+
+<h2>{{email_table_title}}</h2>
+<table border="1" cellspacing="2" cellpadding="2">
+    <thead>
+        <tr>
+            <th>TIMESTAMP</th>
+            <th>Incident Summary</th>
+            <th>Incident Sample Log</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in matches %}
+    <tr>
+        <td>{{item.get('@timestamp')}}</td>
+        <td>{{item.get('incident_name')}} ({{item.get('_id')}})</td>
+        <td>
+            {% if item.get('events', []) is defined and correlated_values|length > 0 %}
+            {{ item.get('events')[0]['message'] }}
+            {% else %}
+            -
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<br/><hr/>
+<small>* end of alert report *</small>
+<hr/><br/>
+
+</body>
+</html>

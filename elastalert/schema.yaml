@@ -155,6 +155,28 @@ oneOf:
       # custom rules include a period in the rule type
       type: {pattern: "[.]"}
 
+  - title: Extension Cardinality
+    required: [cardinality_field, timeframe]
+    properties:
+      type: {enum: [extension_cardinality]}
+      min_num_events: {type: integer}
+      max_num_events: {type: integer}
+      timeframe: *timeframe
+      attach_related: {type: boolean}
+
+  - title: Extension Frequency
+    required: [timeframe]
+    properties:
+      type: {enum: [extension_frequency]}
+      min_num_events: {type: integer}
+      max_num_events: {type: integer}
+      timeframe: *timeframe
+      use_count_query: {type: boolean}
+      doc_type: {type: string}
+      use_terms_query: {type: boolean}
+      terms_size: {type: integer}
+      attach_related: {type: boolean}
+
 properties:
 
   # Common Settings
@@ -324,7 +346,6 @@ properties:
   alerta_environment: {type: string}  # Python format string
   alerta_origin: {type: string}   # Python format string
   alerta_group: {type: string}  # Python format string
-  alerta_service: {type: array, items: {type: string}}  # Python format string
   alerta_service: {type: array, items: {type: string}}  # Python format string
   alerta_correlate: {type: array, items: {type: string}}  # Python format string
   alerta_tags: {type: array, items: {type: string}}   # Python format string

@@ -1,0 +1,95 @@
+<html>
+<head>
+    <title>{{rule_name}}: {{datetime}}</title>
+</head>
+<body>
+
+<p>
+    There were <strong>{{ matches|length }}</strong> events found matching the criteria for search: <strong>{{ rule_name }}</strong>
+</p>
+
+{# note: correlated values must be list o dictionaries like this
+[{"qk": query_key, "value": value, "counts": 0}]
+#}
+
+{% if correlated_values is defined and correlated_values|length > 0 %}
+<p>The following correlated values were taken into account to trigger the notification</p>
+    <table border="1" cellspacing="2" cellpadding="2">
+        <thead>
+        <tr>
+            <th>Correlated Value ({{correlated_values[0].qk}})</th>
+            <th>Count</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for cv in correlated_values %}
+            <tr>
+                <td>{{cv.value}}</td>
+                <td style="text-align:right">{{cv.counts}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<br/>
+<h2>{{email_table_title}}</h2>
+<table border="1" cellspacing="2" cellpadding="2">
+    <thead>
+    <tr>
+        {% for column in t_columns %}
+        <th>{{ column|striptags|replace('.', ' ')|title }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in matches %}
+    <tr>
+        <td>{{item.get('@timestamp')}}</td>
+        <td>{{item.get('src_ip')}} :{{item.get('src_port')}}<br>
+            {{item.get('dest_ip')}} :{{item.get('dest_port')}}
+        </td>
+        <td>
+            {% if es_fields[2] is not string %}
+                {% if es_fields[2]|length > 1 %}
+                    {{ item.get(es_fields[2][0], {}).get(es_fields[2][1]) }}
+                {% else %}
+                    {{ item.get(es_fields[2][0], None) }}
+                {% endif %}
+            {% else %}
+                {{ item.get(es_fields[2]) }}
+            {% endif %}
+        </td>
+        <td>
+            {% if es_fields[3] is not string %}
+                {% if es_fields[3]|length > 1 %}
+                    {{ item.get(es_fields[3][0], {}).get(es_fields[3][1]) }}
+                {% else %}
+                    {{ item.get(es_fields[3][0], None) }}
+                {% endif %}
+            {% else %}
+                {{ item.get(es_fields[3]) }}
+            {% endif %}
+        </td>
+        <td>
+            {% if es_fields[4] is not string %}
+                {% if es_fields[4]|length > 1 %}
+                    {{ item.get(es_fields[4][0], {}).get(es_fields[4][1]) }}
+                {% else %}
+                    {{ item.get(es_fields[4][0], None) }}
+                {% endif %}
+            {% else %}
+                {{ item.get(es_fields[4]) }}
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<br/><hr/>
+<small>* end of alert report *</small>
+<hr/><br/>
+
+</body>
+</html>

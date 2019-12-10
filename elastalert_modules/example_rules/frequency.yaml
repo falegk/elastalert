@@ -1,0 +1,15 @@
+# From example_rules/example_frequency.yaml
+name: Example rule 2
+type: frequency
+index: logstash-*
+num_events: 2
+timeframe:
+  hours: 24
+filter:
+  - term:
+      some_field: "tnianios"
+
+alert:
+  - "email"
+email:
+  - "falegk1@gmail.com"

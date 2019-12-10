@@ -1,0 +1,15 @@
+name: "Example login rule"
+type: "clone_modules.cg_rules.AwesomeRule"
+index: logstash-*
+# Alert if admin, userXYZ or foobaz log in between 8 PM and midnight
+time_start: "20:00"
+time_end: "24:00"
+usernames:
+  - "admin"
+  - "userXYZ"
+  - "foobaz"
+# We require the username field from documents
+include:
+  - "username"
+alert:
+  - debug

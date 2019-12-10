@@ -1,0 +1,55 @@
+# This file generated automatically via LogM application
+# alert created at 2019-12-03 11:55:34 UTC
+# Last Update: 2019-12-04 06:47:24 UTC
+---
+name: Spoof Deny Include Allow logs-(2019-12-03 11:55:34 UTC)
+type: extension_frequency
+index: logstash-*
+description: Alert for Spoof Deny
+timeframe:
+  minutes: 5
+filter:
+- query:
+    query_string:
+      query: attack_type:spoof AND fw_action:deny AND "1.1.1.1"
+
+additional_filters:
+  filter:
+  - query:
+      query_string:
+        query: attack_type:spoof AND fw_action:allow
+  min_num_events: 5
+  max_num_events: 20
+  trigger_alert_by_events: false
+  query_key: severity
+
+alert:
+- clone_email
+- create_incident
+incident_index: 192.168.2.141_incidents
+events_index: 192.168.2.141_incident_events
+incident_attributes:
+  doc_type: _doc
+  user_id: 3
+  incident_name: Spoof Deny Include Allow logs
+  incident_description: Alert for Spoof Deny
+  incident_priority: Low
+  incident_priority_code: 3
+  incident_status: Pending
+  alert_id: 45
+  search_id: 116
+  incident_category:
+  operating_system:
+  security_layer:
+  auto_close: false
+  soc_investigation: true
+important_fields_list: []
+event_attributes:
+  doc_type: _doc
+attach_related: true
+min_num_events: 10
+query_key: src_ip
+email:
+- pigadasth@gmail.com
+- falegk1@gmail.com
+email_table_title: Logs

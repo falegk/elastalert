@@ -26,6 +26,10 @@ from .util import ts_to_dt_with_format
 from .util import unix_to_dt
 from .util import unixms_to_dt
 
+sys.path.append('/home/falegk/Work/elastalert2/elastalert/elastalert_modules') # Add your absolute path
+import elastalert_modules
+from elastalert_modules import extended_rules
+from elastalert_modules import extended_alerts
 
 class RulesLoader(object):
     # import rule dependency
@@ -50,6 +54,8 @@ class RulesLoader(object):
         'cardinality': ruletypes.CardinalityRule,
         'metric_aggregation': ruletypes.MetricAggregationRule,
         'percentage_match': ruletypes.PercentageMatchRule,
+        'extension_cardinality': elastalert_modules.extended_rules.ExtensionCardinalityRule,
+        'extension_frequency': elastalert_modules.extended_rules.ExtensionFrequencyRule
     }
 
     # Used to map names of alerts to their classes
@@ -76,7 +82,9 @@ class RulesLoader(object):
         'servicenow': alerts.ServiceNowAlerter,
         'alerta': alerts.AlertaAlerter,
         'post': alerts.HTTPPostAlerter,
-        'hivealerter': alerts.HiveAlerter
+        'hivealerter': alerts.HiveAlerter,
+        'create_incident': elastalert_modules.extended_alerts.CreateIncident,
+        'clone_email': elastalert_modules.extended_alerts.CloneEmail
     }
 
     # A partial ordering of alert types. Relative order will be preserved in the resulting alerts list

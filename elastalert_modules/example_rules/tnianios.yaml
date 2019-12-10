@@ -1,0 +1,41 @@
+# This file generated automatically via LogM application
+# alert created at 2018-09-03 22:22:12 UTC
+# Last Update: 2018-09-26 17:58:12 UTC
+---
+name: tnianios search 126
+type: extension_frequency
+index: logstash-*
+description: Alert for tnianios search
+timeframe:
+  minutes: 3600
+filter:
+- query:
+    query_string:
+      query: "tnianios"
+alert:
+- clone_email
+#- create_incident
+incident_index: 192.168.2.141_incidents
+events_index: 192.168.2.141_incident_events
+incident_attributes:
+  doc_type: incident
+  user_id: 3
+  incident_name: tnianios search
+  incident_description: Alert for tnianios search
+  incident_priority: Low
+  incident_priority_code: 3
+  incident_status: Pending
+  alert_id: 37
+  incident_category: Authentication
+  operating_system: Windows
+  security_layer: Server
+  auto_close: false
+  soc_investigation: true
+event_attributes:
+  doc_type: incident_event
+attach_related: true
+min_num_events: 1
+email:
+  - falegk1@gmail.com
+  - pigadasth@gmail.com
+email_table_title: Logs

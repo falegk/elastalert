@@ -1,0 +1,176 @@
+<html>
+<head>
+    <title>{{rule_name}}: {{datetime}}</title>
+</head>
+<body>
+
+<p>
+    There were <strong>{{ num_hits }}</strong> logs found matching the criteria for search: <strong>{{ rule_name }}</strong>
+</p>
+
+{#
+    note: correlated values must be list o dictionaries like this
+    [{"qk": query_key, "value": value, "counts": 0}]
+
+    additional_results: must be a dict with {hits: , total_hits:, num_hits:} or empty {}
+#}
+
+{% if additional_results is defined and 'hits' in additional_results %}
+    <p>
+    There were <strong>{{ additional_results.total_hits }}</strong> logs added matching the additional criteria.
+    </p>
+{% endif %}
+
+{# Defines a blacklist of fields #}
+{% set blacklist_fields = ('_id', '@timestamp', '_index', '_score', '_type', 'syslog_message', 'syslog_program', 'msg') %}
+
+{% if correlated_values is defined and correlated_values|length > 0 %}
+<p>The following correlated values were taken into account to trigger the notification</p>
+<table border="1" cellspacing="2" cellpadding="2">
+    <thead>
+    <tr>
+        <th>Correlated Value ({{correlated_values[0].qk}})</th>
+        <th>Count</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for cv in correlated_values %}
+    <tr>
+        <td>{{cv.value}}</td>
+        <td style="text-align:right">{{cv.counts}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<br/>
+
+{% if important_list is defined and important_list|length > 0 %}
+<p>The following fields will assist with the investigation of this incident</p>
+<table border="1" cellspacing="2" cellpadding="2">
+    <thead>
+    <tr>
+        <th>Field</th>
+        <th>Values</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for tag in important_list %}
+    <tr>
+        <td>{{tag.field_name}}</td>
+        <td>{{tag.value|join(', ')}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<br/>
+
+<h2>{{email_table_title}}</h2>
+<table border="1" cellspacing="2" cellpadding="2">
+    <thead>
+        <tr>
+            <th>TIMESTAMP</th>
+            <th>SOURCE</th>
+            <th>MESSAGE</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in matches %}
+    <tr>
+        <td>{{item.get('@timestamp')}}</td>
+        <td>{{item.get('syslog_hostname')}}</td>
+        <td>
+            {{item.get('syslog_message')}},
+            <div style="margin-top:5px">
+                <strong>program: </strong>{{item.get('syslog_program')}},
+                {% for key, value in item.items() %}
+                    {% if value is mapping %}
+                        {% for key2, value2 in value.items() %}
+                            <strong>{{key}}.{{key2}}: </strong>{{value2}},
+                        {% endfor %}
+                    {% else %}
+                        {% if key not in blacklist_fields %}
+                            <strong>{{key}}: </strong>{{value}},
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <strong>tags: </strong>{{item.get('tags')}}
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if additional_results is defined and 'hits' in additional_results %}
+    <h2>{{email_table_title}} (Criteria 2)</h2>
+
+    {% if additional_results.correlated_values is defined and additional_results.correlated_values|length > 0 %}
+        <table border="1" cellspacing="2" cellpadding="2">
+            <thead>
+            <tr>
+                <th>Correlated Value</th>
+                <th>Value</th>
+                <th>Count</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for key, value in additional_results.correlated_values.items() %}
+            <tr>
+                <td>{{value.qk}}</td>
+                <td>{{value.value}}</td>
+                <td>{{value.counts}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <table border="1" cellspacing="2" cellpadding="2">
+        <thead>
+        <tr>
+            <th>TIMESTAMP</th>
+            <th>SOURCE</th>
+            <th>MESSAGE</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in additional_results.hits %}
+            {% set source = item._source %}
+            <tr>
+                <td>{{source.get('@timestamp')}}</td>
+                <td>{{source.get('syslog_hostname')}}</td>
+                <td>
+                    {{source.get('syslog_message')}},
+                    <div style="margin-top:5px">
+                        <strong>program: </strong>{{source.get('syslog_program')}},
+                        {% for key, value in source.items() %}
+                            {% if value is mapping %}
+                                {% for key2, value2 in value.items() %}
+                                <strong>{{key}}.{{key2}}: </strong>{{value2}},
+                                {% endfor %}
+                            {% else %}
+                                {% if key not in blacklist_fields %}
+                                    <strong>{{key}}: </strong>{{value}},
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        <strong>tags: </strong>{{source.get('tags')}}
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+
+<br/><hr/>
+<small>* end of alert report *</small>
+<hr/><br/>
+
+</body>
+</html>
